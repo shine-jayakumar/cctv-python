@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTV</title>
+    <style>
+        #playback_container {
+            width: 80%;
+        }
+        .center {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 50%;
+        }
+
+    </style>
+</head>
+<body>
+    <h1> CCTV Video Playback </h1>
+    <br/>
+    <div id="playback_container">
+        <table>
+            <tr>
+                <td>Date:</td>
+                <td><input type="date" id="dt_imgdate" name="imgdate"></td>
+            </tr>
+            <tr>
+                <td>From:</td>
+                <td><input type="time" id="time_st" name="timestart"></td>
+            </tr>
+            <tr>
+                <td>To:</td>
+                <td><input type="time" id="time_en" name="timeend"></td>
+                <td><input type="button" value="Watch" id="btn_watch"></td>
+            </tr>
+        </table>
+    </div>
+    <div style="border: 1px solid black;">
+        <img src="" alt="" id="img_playback" class="center">
+    </div>
+
+    <script>
+
+        let VIDEO_ENDP = "{{ url_for('stream') }}";
+
+        function validator() {
+            let imgdate = document.getElementById('dt_imgdate').value;
+            let time_st = document.getElementById('time_st').value;
+            let time_en = document.getElementById('time_en').value;
+            
+            if ( imgdate == '' || time_st == '' || time_en == '') 
+                return false;
+
+            if ( time_st > time_en ) {
+                console.log('invalid time'); return false;
+            }
+                
+            
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            document.getElementById('btn_watch').addEventListener('click', () => {
+                
+                if (! validator() ) 
+                    return;
+                
+                let imgdate = document.getElementById('dt_imgdate').value;
+                let time_st = document.getElementById('time_st').value;
+                let time_en = document.getElementById('time_en').value;
+
+                let url = VIDEO_ENDP + "?imgdate=" + imgdate + "&time_st=" + time_st + "&time_en=" + time_en;
+                
+                document.getElementById('img_playback').src = url;
+
+            });
+        });
+
+    </script>
+</body>
+</html>

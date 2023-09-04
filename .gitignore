@@ -1,0 +1,7 @@
+__pycache__
+*.log
+env
+*.png
+*.jpg
+.lastsortnum
+!error-404.png
