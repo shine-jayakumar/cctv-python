@@ -5,6 +5,7 @@
 import os
 import shutil
 import re
+import time
 from datetime import datetime
 from constants.constants import IMG_PATH, ERROR404_IMG_PATH
 from modules.applogger import AppLogger
@@ -298,6 +299,25 @@ def get_images(imgdate: str, time_st: str, time_en: str) -> list:
     images = [os.path.join(imgdirpath, img) for img in images]
 
     return images
+
+
+def stream_images(images: list[str], delay: int = 0.3):
+    """
+    Streams list of images
+    """
+    if not images:
+        return b''
+
+    for img in images:
+
+        imgdata = b''
+        with open(img, 'rb') as imgfh:
+            imgdata = imgfh.read()
+        
+        yield(b'--frame\r\n'
+              b'Content-Type: image/jpeg\r\n\r\n'+ imgdata + b'\r\n'
+        )
+        time.sleep(delay)
 
 
 def get_err404_image():
