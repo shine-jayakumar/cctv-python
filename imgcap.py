@@ -9,24 +9,25 @@ import os
 import time
 from datetime import datetime
 from modules.applogger import AppLogger
-from constants.constants import IMG_PATH
+from constants.constants import IMG_PATH, IMGCAP_INTERVAL
 
 
 log = AppLogger('IMAGE_CAPTURE').getlogger()
 
-log.info('captureframes started')
+log.info('ImgCap started')
 
 cap = None
 try:
     log.info('Initiating camera')
     cap = cv2.VideoCapture(0)
+    log.info('Camera initiated')
 except Exception as ex:
     log.error(f'Error initiating camera: {ex.__class__.__name__} - {str(ex)}')
     sys.exit(1)
 
 st = time.time()
 
-log.info('Reading images from camera')
+log.info(f'Image capturing started with interval: {IMGCAP_INTERVAL} seconds')
 while True:
 
     ret,frame = (None, None)
@@ -34,15 +35,19 @@ while True:
         ret,frame = cap.read()
     except Exception as ex:
         log.error(f'Camera Read Error: {ex.__class__.__name__} - {str(ex)}')
-        break
+        sys.exit(1)
 
     if not ret:
         log.error('Error while reading from camera')
-        break
+        sys.exit(2)
     
     img_name = os.path.join(IMG_PATH, f"{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.jpg")
-    cv2.imwrite(img_name, frame)
-    time.sleep(0.2)
+    try:
+        cv2.imwrite(img_name, frame)
+    except Exception as ex:
+        log.error(f'[Write error] Image file: {img_name}')
+
+    time.sleep(IMGCAP_INTERVAL)
 
 
 
