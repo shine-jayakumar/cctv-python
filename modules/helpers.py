@@ -319,7 +319,7 @@ def stream_images(images: list[str], delay: int = 0.3):
         yield(b'--frame\r\n'
               b'Content-Type: image/jpeg\r\n\r\n'+ imgdata + b'\r\n'
         )
-        # time.sleep(delay)
+        time.sleep(delay)
 
 
 def get_err404_image():

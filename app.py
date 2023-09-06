@@ -46,7 +46,7 @@ def stream():
     
     # stream images
     return Response(
-        stream_images(images=images),
+        stream_images(images=images, delay=0.1),
         mimetype='multipart/x-mixed-replace; boundary=frame'
     )
 
