@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTV</title>
+    <style>
+        #playback_container {
+            width: 80%;
+        }
+        .center {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 50%;
+        }
+
+    </style>
+</head>
+<body>
+    <h1> CCTV Video Playback </h1>
+    <br/>
+    <div id="playback_container">
+        <img src="{{ url_for('streamlive') }}" alt="" id="img_playback" class="center">
+    </div>
+
+   
+</body>
+</html>
