@@ -39,6 +39,7 @@ def stream():
         time_st = time_st,
         time_en = time_en
     )
+    log.info(f'Images: {images}')
     if not images:
         return send_file(ERROR404_IMG_PATH, mimetype='image/png')
     

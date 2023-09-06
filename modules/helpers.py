@@ -314,6 +314,7 @@ def stream_images(images: list[str], delay: int = 0.3):
         with open(img, 'rb') as imgfh:
             imgdata = imgfh.read()
         
+        log.info(f'Streaming: {img}')
         yield(b'--frame\r\n'
               b'Content-Type: image/jpeg\r\n\r\n'+ imgdata + b'\r\n'
         )
