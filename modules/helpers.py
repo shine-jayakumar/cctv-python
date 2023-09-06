@@ -308,6 +308,7 @@ def stream_images(images: list[str], delay: int = 0.3):
     if not images:
         return b''
 
+    log.info(f'Stream received images: {len(images)}')
     for img in images:
 
         imgdata = b''
