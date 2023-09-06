@@ -192,7 +192,8 @@ def exec_multithread(func: Callable, items: Iterable, max_workers: int = 5) -> N
     with ThreadPoolExecutor(max_workers) as exc:
         for itemno, runstat in enumerate(exc.map(func, items)):
             try:
-                log.debug(f'[Mutlithread Exec]: {func.__name__}({items[itemno]}) - Ret: {runstat}')
+                if not runstat:
+                    log.debug(f'[Mutlithread Exec]: {func.__name__}({items[itemno]}) - Ret: {runstat}')
             except Exception as ex:
                 log.error(f'[Mutlithread Exec]: {func.__name__}({items[itemno]}) - Err: {ex.__class__.__name__} - {str(ex)}')
     
