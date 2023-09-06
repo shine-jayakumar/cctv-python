@@ -46,9 +46,8 @@ def stream():
     
     # stream images
     return Response(
-        stream_images(images=images),
-        # mimetype='multipart/x-mixed-replace; boundary=frame'
-        mimetype='image/jpg'
+        stream_images(images=images, delay=0.2),
+        mimetype='multipart/x-mixed-replace; boundary=frame'
     )
 
 if __name__ == '__main__':
