@@ -69,7 +69,7 @@ def add_timestamp(imgpath: str) -> tuple[str,bool]:
     tstamp = datetime.strptime(tstamp, '%Y%m%d_%H%M%S%f').strftime('%Y-%m-%d %H:%M:%S:%f')
 
     try:
-        img = Image.open(imgpath)
+        img = Image.open(os.path.join(IMG_PATH,imgpath))
         imgdraw = ImageDraw.Draw(img)
         font = ImageFont.truetype(DEFAULT_FONT, 14)
         imgdraw.text((5,5), tstamp, (0,255,0), font=font)
