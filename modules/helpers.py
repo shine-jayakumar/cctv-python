@@ -73,7 +73,7 @@ def add_timestamp(imgpath: str) -> tuple[str,bool]:
         imgdraw = ImageDraw.Draw(img)
         font = ImageFont.truetype(DEFAULT_FONT, 14)
         imgdraw.text((5,5), tstamp, (0,255,0), font=font)
-        img.save(imgpath)
+        img.save(os.path.join(IMG_PATH,imgpath))
 
     except Exception as ex:
         log.error(f'Error adding timestamp: {ex.__class__.__name__} - {str(ex)}')
