@@ -17,3 +17,9 @@ MAX_IMGCAP_ERROR_THRESHOLD = 20
 GROUP_IMAGES_INTERVAL = 2
 
 DEFAULT_FONT = os.path.join(os.getcwd(), 'fonts/Ubuntu-R.ttf')
+
+STREAM_INTERVAL = {
+    'normal': 0.3,
+    'slow': 0.4,
+    'fast': 0.1
+}

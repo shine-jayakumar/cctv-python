@@ -1,6 +1,6 @@
 
 from flask import Flask, render_template, Response, request, send_file
-from constants.constants import ERROR404_IMG_PATH
+from constants.constants import ERROR404_IMG_PATH, STREAM_INTERVAL
 from modules.helpers import get_images, stream_images
 from modules.applogger import AppLogger
 
@@ -28,9 +28,10 @@ def stream():
     imgdate = request.args.get('imgdate', '')
     time_st = request.args.get('time_st', '')
     time_en = request.args.get('time_en', '')
+    delay = STREAM_INTERVAL.get(request.args.get('speed', 'normal'))
 
     if not all([imgdate, time_st, time_en]):
-        log.info('Either image date, start, end time is missing')
+        log.info('[{imgdate=} {time_st=} {time_en=}] Either image date, start, end time is missing')
         return send_file(ERROR404_IMG_PATH, mimetype='image/png')
     
     # fetch list of images to stream
@@ -39,14 +40,14 @@ def stream():
         time_st = time_st,
         time_en = time_en
     )
-    log.info(f'Images: {images}')
-    log.info(f'Sending images to stream: {len(images)}')
+    log.info(f'[{imgdate=} {time_st=} {time_en=}] Total images: {len(images)}')
     if not images:
+        log.info(f'[{imgdate=} {time_st=} {time_en=}] No images found for the date range')
         return send_file(ERROR404_IMG_PATH, mimetype='image/png')
     
     # stream images
     return Response(
-        stream_images(images=images, delay=0.1),
+        stream_images(images=images, delay=delay),
         mimetype='multipart/x-mixed-replace; boundary=frame'
     )
 

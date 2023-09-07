@@ -63,12 +63,14 @@ def add_timestamp(imgpath: str) -> tuple[str,bool]:
     """
     Adds timestamp to an image
     """
-    # 20230902_152601.jpg -> 20230902_152601
-    tstamp = imgpath.split('.')[0]
-    # 20230902_152601 -> 2023-09-02 15:26:01
-    tstamp = datetime.strptime(tstamp, '%Y%m%d_%H%M%S%f').strftime('%Y-%m-%d %H:%M:%S:%f')
-
+    
     try:
+
+        # 20230902_152601.jpg -> 20230902_152601
+        tstamp = imgpath.split('.')[0]
+        # 20230902_152601 -> 2023-09-02 15:26:01
+        tstamp = datetime.strptime(tstamp, '%Y%m%d_%H%M%S%f').strftime('%Y-%m-%d %H:%M:%S:%f')
+
         img = Image.open(os.path.join(IMG_PATH,imgpath))
         imgdraw = ImageDraw.Draw(img)
         font = ImageFont.truetype(DEFAULT_FONT, 14)
@@ -340,21 +342,19 @@ def get_images(imgdate: str, time_st: str, time_en: str) -> list:
     return images
 
 
-def stream_images(images: list[str], delay: int = 0.3):
+def stream_images(images: list[str], delay: int = 0.2):
     """
     Streams list of images
     """
     if not images:
         return b''
 
-    log.info(f'Stream received images: {len(images)}')
     for img in images:
 
         imgdata = b''
         with open(img, 'rb') as imgfh:
             imgdata = imgfh.read()
-        
-        log.info(f'Streaming: {img}')
+
         yield(b'--frame\r\n'
               b'Content-Type: image/jpeg\r\n\r\n'+ imgdata + b'\r\n'
         )

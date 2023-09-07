@@ -14,6 +14,13 @@
             margin-right: auto;
             width: 50%;
         }
+        /* #btn_watch {
+            padding: 7 10 10 7;
+            font-family: Arial, Helvetica, sans-serif;
+        } */
+        .pad7 {
+            padding: 7px;
+        }
 
     </style>
 </head>
@@ -24,16 +31,28 @@
         <table>
             <tr>
                 <td>Date:</td>
-                <td><input type="date" id="dt_imgdate" name="imgdate"></td>
+                <td><input type="date" id="dt_imgdate" name="imgdate" class="pad7"></td>
             </tr>
             <tr>
                 <td>From:</td>
-                <td><input type="time" id="time_st" name="timestart"></td>
+                <td><input type="time" id="time_st" name="timestart" class="pad7"></td>
             </tr>
             <tr>
                 <td>To:</td>
-                <td><input type="time" id="time_en" name="timeend"></td>
-                <td><input type="button" value="Watch" id="btn_watch"></td>
+                <td><input type="time" id="time_en" name="timeend" class="pad7"></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="speed">Speed:</label>
+                </td>
+                <td>
+                    <select name="playbackspeed" id="playbackspeed" class="pad7">
+                        <option value="normal" selected>Normal</option>
+                        <option value="fast">Fast</option>
+                        <option value="slow">Slow</option>
+                    </select>
+                    <input type="button" value="Watch" id="btn_watch" class="pad7">
+                </td>
             </tr>
         </table>
     </div>
@@ -71,8 +90,9 @@
                 let imgdate = document.getElementById('dt_imgdate').value;
                 let time_st = document.getElementById('time_st').value;
                 let time_en = document.getElementById('time_en').value;
+                let speed = document.getElementById('playbackspeed').value;
 
-                let url = VIDEO_ENDP + "?imgdate=" + imgdate + "&time_st=" + time_st + "&time_en=" + time_en;
+                let url = VIDEO_ENDP + "?imgdate=" + imgdate + "&time_st=" + time_st + "&time_en=" + time_en + "&speed=" + speed;
                 
                 document.getElementById('img_playback').src = url;
 
