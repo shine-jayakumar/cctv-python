@@ -7,49 +7,73 @@ import shutil
 import re
 import time
 from datetime import datetime
-from constants.constants import IMG_PATH, ERROR404_IMG_PATH
+from constants.constants import IMG_PATH, ERROR404_IMG_PATH, DEFAULT_FONT
 from modules.applogger import AppLogger
-import subprocess
+# import subprocess
 from concurrent.futures import ThreadPoolExecutor
+from PIL import Image, ImageDraw, ImageFont
 from typing import Callable, Iterable
 
 
 log = AppLogger('HELPERS').getlogger()
 
 
+# def add_timestamp(imgpath: str) -> tuple[str,bool]:
+#     """
+#     Add the timestamp to images
+#     """
+#     # 20230902_152601.jpg -> 20230902_152601
+#     tstamp = imgpath.split('.')[0]
+#     # 20230902_152601 -> 2023-09-02 15:26:01
+#     tstamp = datetime.strptime(tstamp, '%Y%m%d_%H%M%S%f').strftime('%Y-%m-%d %H:%M:%S:%f')
+#     # ffmpeg requires escaping special characters
+#     tstamp = tstamp.replace(':','\:')
+
+#     tmp_imgpath = os.path.join(IMG_PATH, f"{imgpath.split('.jpg')[0]}_tmp.jpg")
+#     imgpath = os.path.join(IMG_PATH, imgpath)
+    
+#     # ffmpeg filter
+#     filter = f"drawtext=text='{tstamp}': x=5: y=5: fontcolor=yellow: fontsize=12: shadowcolor=black: shadowx=1: shadowy=1: box=1: boxcolor=black@0.8: boxborderw=5"
+
+#     # ffmpeg arguments
+#     ffmpeg_cmd = [
+#         "ffmpeg",
+#         "-i", imgpath,
+#         "-vf", filter,
+#         tmp_imgpath,
+#         "-loglevel", "error"
+#     ]
+#     try:
+#         # add timestampt to image
+#         subprocess.run(ffmpeg_cmd, check=True)
+#         # remove original image file
+#         os.remove(imgpath)
+#         # rename new image filename (with timestamp) 
+#         # to original filename
+#         os.rename(tmp_imgpath, imgpath)
+
+#     except Exception as ex:
+#         log.error(f'Error adding timestamp: {ex.__class__.__name__} - {str(ex)}')
+#         return (imgpath, False)
+    
+#     return (imgpath, True)
+
+
 def add_timestamp(imgpath: str) -> tuple[str,bool]:
     """
-    Add the timestamp to images
+    Adds timestamp to an image
     """
     # 20230902_152601.jpg -> 20230902_152601
     tstamp = imgpath.split('.')[0]
     # 20230902_152601 -> 2023-09-02 15:26:01
     tstamp = datetime.strptime(tstamp, '%Y%m%d_%H%M%S%f').strftime('%Y-%m-%d %H:%M:%S:%f')
-    # ffmpeg requires escaping special characters
-    tstamp = tstamp.replace(':','\:')
 
-    tmp_imgpath = os.path.join(IMG_PATH, f"{imgpath.split('.jpg')[0]}_tmp.jpg")
-    imgpath = os.path.join(IMG_PATH, imgpath)
-    
-    # ffmpeg filter
-    filter = f"drawtext=text='{tstamp}': x=5: y=5: fontcolor=yellow: fontsize=12: shadowcolor=black: shadowx=1: shadowy=1: box=1: boxcolor=black@0.8: boxborderw=5"
-
-    # ffmpeg arguments
-    ffmpeg_cmd = [
-        "ffmpeg",
-        "-i", imgpath,
-        "-vf", filter,
-        tmp_imgpath,
-        "-loglevel", "error"
-    ]
     try:
-        # add timestampt to image
-        subprocess.run(ffmpeg_cmd, check=True)
-        # remove original image file
-        os.remove(imgpath)
-        # rename new image filename (with timestamp) 
-        # to original filename
-        os.rename(tmp_imgpath, imgpath)
+        img = Image.open(imgpath)
+        imgdraw = ImageDraw.Draw(img)
+        font = ImageFont.truetype(DEFAULT_FONT, 14)
+        imgdraw.text((5,5), tstamp, (0,255,0), font=font)
+        img.save(imgpath)
 
     except Exception as ex:
         log.error(f'Error adding timestamp: {ex.__class__.__name__} - {str(ex)}')
@@ -167,20 +191,43 @@ def rename_image(imgnames: tuple[str]) -> bool:
     return True
 
 
-def move_image(imgname: str) -> bool:
+# def move_image(imgname: str) -> bool:
+#     """
+#     Moves image to its date directory
+#     Ex: 20230903_122802_000001.jpg -> IMG_PATH/20230903_122802_000001.jpg 
+#     """
+#     try:
+#         newpath = os.path.join(imgname.split('_')[0], imgname)
+#         newpath = os.path.join(IMG_PATH, newpath)
+#         shutil.move(
+#             os.path.join(IMG_PATH, imgname),
+#             newpath
+#         )
+#     except Exception as ex:
+#         log.error(f'[Move Error]: {imgname} Err: {ex.__class__.__name__} - {str(ex)}')
+#         return False
+#     return True
+
+
+def move_image(imgpath: tuple[str]) -> bool:
     """
     Moves image to its date directory
-    Ex: 20230903_122802_000001.jpg -> IMG_PATH/20230903_122802_000001.jpg 
+
+    Params:
+        (org_img_path, sequenced_img_path)
+        ex: (20230903_122802.jpg, 20230903_122802_000001.jpg)
+
+    Moves 20230903_122802.jpg to 20230903/20230903_122802_000001.jpg 
     """
     try:
-        newpath = os.path.join(imgname.split('_')[0], imgname)
-        newpath = os.path.join(IMG_PATH, newpath)
+        # date directory
+        newpath = os.path.join(imgpath[1].split('_')[0], imgpath[1])
         shutil.move(
-            os.path.join(IMG_PATH, imgname),
-            newpath
+            os.path.join(IMG_PATH, imgpath[0]), # 20230903_122802.jpg
+            os.path.join(IMG_PATH, newpath) # 20230903/20230903_122802_000001.jpg 
         )
     except Exception as ex:
-        log.error(f'[Move Error]: {imgname} Err: {ex.__class__.__name__} - {str(ex)}')
+        log.error(f'[Move Error]: {imgpath} Err: {ex.__class__.__name__} - {str(ex)}')
         return False
     return True
 
@@ -223,26 +270,17 @@ def group_images() -> None:
 
     # adding timestamp
     exec_multithread(func = add_timestamp, items = images, max_workers=2)
-    # with ThreadPoolExecutor(max_workers=5) as excecutor:
-    #     for status in excecutor.map(add_timestamp, images):
-    #         try:
-    #             if not status[1]:
-    #                 log.error(f'Error adding timestamp: {status[0]}')
-    #         except Exception as ex:
-    #             log.error(f'Error adding timestamp: {status[0]} - {ex.__class__.__name__} - {str(ex)}')
     
     # original image name and their sequenced image name
     # [('20230903_121501.jpg','20230903_121501_000011.jpg'),...]
     sequeced_imgs = assign_image_sequence(imgpaths = images)
-    # # appending image path
-    # sequeced_imgs = [(os.path.join(IMG_PATH, imgorg), os.path.join(IMG_PATH, imgseq)) 
-    #                  for imgorg,imgseq in sequeced_imgs]
-    # rename images with sequenced file names
-    # ex: 20230903_121501.jpg -> 20230903_121501_000011.jpg
-    exec_multithread(func = rename_image, items = sequeced_imgs, max_workers=2)
 
-    # list images which are sequenced
-    sequeced_imgs = [img for img in os.listdir(IMG_PATH) if re.match(r'\d{8}_\d{12}_\d{6}.jpg', img)]
+    # # rename images with sequenced file names
+    # # ex: 20230903_121501.jpg -> 20230903_121501_000011.jpg
+    # exec_multithread(func = rename_image, items = sequeced_imgs, max_workers=2)
+
+    # # list images which are sequenced
+    # sequeced_imgs = [img for img in os.listdir(IMG_PATH) if re.match(r'\d{8}_\d{12}_\d{6}.jpg', img)]
 
     # move images to their appropriate date directories
     exec_multithread(func = move_image, items = sequeced_imgs, max_workers=2)
