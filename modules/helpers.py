@@ -321,14 +321,19 @@ def get_images(imgdate: str, time_st: str, time_en: str) -> list:
     t_en = int(remove_leading(time_en.replace(':', ''), '0'))
     
     images = []
-    # get images from the date dir
-    for img in os.listdir(os.path.join(IMG_PATH, datedir)):
-        if img.endswith('.jpg'):
-            log.debug(f'Image: {img}')
-            # get hh:min from image time
-            img_time = int(remove_leading(img.split('_')[1][:4], '0'))
-            if img_time >= t_st and img_time <= t_en:
-                images.append(img)
+    try:
+        # get images from the date dir
+        for img in os.listdir(os.path.join(IMG_PATH, datedir)):
+            if img.endswith('.jpg'):
+                log.debug(f'Image: {img}')
+                # get hh:min from image time
+                img_time = int(remove_leading(img.split('_')[1][:4], '0'))
+                if img_time >= t_st and img_time <= t_en:
+                    images.append(img)
+    except Exception as ex:
+        log.error(f'[imgdate: {imgdate} ({time_st} - {time_en})] Error filtering image - {ex.__class__.__name__} - {str(ex)} ')
+        return []
+    
     if not images:
         log.info(f'[imgdate: {imgdate} ({time_st} - {time_en})] No images found')
         return []
