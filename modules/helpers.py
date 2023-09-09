@@ -293,7 +293,7 @@ def remove_leading(text: str, char: str):
     Removes leading char from text
     """
     if not all([text, char]):
-        return ''
+        return 0
     
     if not text.startswith(char):
         return text
