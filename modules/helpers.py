@@ -134,6 +134,24 @@ def get_unique_dates(imagefnames: list[str]) -> list[str]:
     return unique_dates
 
 
+def get_hhmm_dirpaths(imagefnames: list[str]) -> list[str]:
+    """
+    Returns list of hhmm dirpaths
+    Ex: 20230902_122322.jpg -> 20230902/1223
+    """
+    hhmm_dirpaths: list[str] = []
+    for img in imagefnames:
+        img = img.replace('.jpg', '')
+        # 20230902/1223
+        dirpath = os.path.join(
+            img.split('_')[0], # 20230902
+            img.split('_')[1][:4] # 1223
+        )
+        hhmm_dirpaths.append(dirpath)
+
+    return hhmm_dirpaths
+
+    
 def create_dirs(dirnames: list[str]) -> None:
     """
     Creates multiple directories
@@ -279,6 +297,10 @@ def group_images() -> None:
     # in image file names
     create_dirs(dirnames = [os.path.join(IMG_PATH, dt) for dt in unique_dates])
 
+    # create hhmm dirs in datedir
+    create_dirs(dirnames=[os.path.join(IMG_PATH, hhmm_dir) 
+                          for hhmm_dir in get_hhmm_dirpaths(imagefnames = images)])
+
     # adding timestamp
     exec_multithread(func = add_timestamp, items = images, max_workers=2)
     
@@ -387,7 +409,7 @@ def get_images(imgdate: str, time_st: str, time_en: str) -> list:
         # sort images based on the sequence number
         imgs_in_dir.sort(key=lambda imgf: imgf.replace('jpg', '').split('_')[-1])
         images.extend(imgs_in_dir)
-        
+
     return images
 
 
