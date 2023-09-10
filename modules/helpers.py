@@ -162,9 +162,13 @@ def create_dirs(dirnames: list[str]) -> None:
             log.debug(f'Created directory: {dirname}')
     
 
-def assign_image_sequence(imgpaths: list[str]) -> list[tuple]:
+def assign_image_sequence(images: list[str]) -> list[tuple]:
     """
     Assigns sort number to image paths
+
+    Params:
+        images: list[str] -> list of image file names 
+        ex: ['20230910_161452249996_000086.jpg',...]
     """ 
     def format_sequence(seq_no: int):
         """ Returns formatted sequence number """
@@ -173,10 +177,17 @@ def assign_image_sequence(imgpaths: list[str]) -> list[tuple]:
             seqno_frmtd = f"{'0'*(6-len(seqno_frmtd))}{seq_no}"
         return seqno_frmtd
 
-    last_sort_no = get_last_sortnum(dirname = imgpaths[0].split('_')[0])
+    # gets last sort no. from datedir/hhmm_dir
+    # ex: 20230910/1614/.lastsortnum
+    last_sort_no = get_last_sortnum(
+        dirname = os.path.join(
+            images[0].split('_')[0], # 20230910
+            images[0].split('_')[1][:4] # 1614
+        )
+    )   
     
     # remove .jpg extension
-    imgpaths_sorted = [img.split('.')[0] for img in imgpaths]
+    imgpaths_sorted = [img.split('.')[0] for img in images]
     # sort filenames by the time
     imgpaths_sorted.sort(key=lambda img: img.split('_')[1])
 
@@ -186,8 +197,11 @@ def assign_image_sequence(imgpaths: list[str]) -> list[tuple]:
                        for seqno,img in enumerate(imgpaths_sorted, start=last_sort_no)]
     
     set_last_sortnum(
-        dirname = imgpaths[0].split('_')[0], 
-        sortnum = last_sort_no + len(imgpaths)
+        dirname = os.path.join(
+            images[0].split('_')[0], # 20230910
+            images[0].split('_')[1][:4] # 1614
+        ), 
+        sortnum = last_sort_no + len(images)
     )
 
     return imgpaths_sorted
@@ -306,7 +320,7 @@ def group_images() -> None:
     
     # original image name and their sequenced image name
     # [('20230903_121501.jpg','20230903_121501_000011.jpg'),...]
-    sequeced_imgs = assign_image_sequence(imgpaths = images)
+    sequeced_imgs = assign_image_sequence(images = images)
 
     # # rename images with sequenced file names
     # # ex: 20230903_121501.jpg -> 20230903_121501_000011.jpg
