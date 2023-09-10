@@ -40,7 +40,8 @@ while True:
     if not ret:
         log.error('Error while reading from camera')
         sys.exit(2)
-    
+        
+    # IMG_PATH/20230910_075003688260.jpg
     img_name = os.path.join(IMG_PATH, f"{datetime.now().strftime('%Y%m%d_%H%M%S%f')}.jpg")
     try:
         cv2.imwrite(img_name, frame)

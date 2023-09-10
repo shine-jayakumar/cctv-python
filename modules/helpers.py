@@ -12,7 +12,7 @@ from modules.applogger import AppLogger
 # import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from PIL import Image, ImageDraw, ImageFont
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Iterator
 
 
 log = AppLogger('HELPERS').getlogger()
@@ -217,16 +217,25 @@ def move_image(imgpath: tuple[str]) -> bool:
 
     Params:
         (org_img_path, sequenced_img_path)
-        ex: (20230903_122802.jpg, 20230903_122802_000001.jpg)
+        ex: (20230910_075003688260.jpg, 20230910_075003688260_000001.jpg)
 
-    Moves 20230903_122802.jpg to 20230903/20230903_122802_000001.jpg 
+    Moves 20230910_075003688260.jpg to 20230910/20230910_075003688260_000001.jpg 
     """
     try:
-        # date directory
-        newpath = os.path.join(imgpath[1].split('_')[0], imgpath[1])
+        # date directory (20230910_075003688260_000001.jpg -> 20230910)
+        datedir = imgpath[1].split('_')[0]
+        # hour min directory (20230910_075003688260_000001.jpg -> 0750)
+        hrmin_dir = imgpath[1].split('_')[1][:4]
+
+        # newpath = os.path.join(imgpath[1].split('_')[0], imgpath[1])
+        # 20230910/0750
+        newpath = os.path.join(datedir, hrmin_dir)
+        # 20230910/0750/20230910_075003688260_000001.jpg
+        newpath = os.path.join(newpath, imgpath[1])
+
         shutil.move(
-            os.path.join(IMG_PATH, imgpath[0]), # 20230903_122802.jpg
-            os.path.join(IMG_PATH, newpath) # 20230903/20230903_122802_000001.jpg 
+            os.path.join(IMG_PATH, imgpath[0]), # IMG_PATH/20230910_075003688260.jpg
+            os.path.join(IMG_PATH, newpath) # IMG_PATH/20230910/0750/20230910_075003688260_000001.jpg
         )
     except Exception as ex:
         log.error(f'[Move Error]: {imgpath} Err: {ex.__class__.__name__} - {str(ex)}')
@@ -301,6 +310,50 @@ def remove_leading(text: str, char: str):
     return remove_leading(text[1:], char)
 
 
+def timerange(st: str, en: str) -> Iterator[str]:
+    """
+    Generates time ranges between st and en (inclusive)
+
+    Params:
+        st: str -> start time (hours:min ex. 23:00)
+        en: str -> end time (hours:min ex. 01:11)
+    """
+
+    def prefix_zero(tm: str):
+        """ Prefixes hh or mm with zero. ex: 2 -> 02 """
+        return f'0{tm}' if len(tm) < 2 else tm
+
+    def normalize_24hrs(hhmm: str):
+        """ Normalizes hours > 23. Ex: 2511-> 0111"""
+        hh = prefix_zero(str(int(hhmm[:2]) - 24)) if int(hhmm[:2]) > 23 else hhmm[:2]
+        return f'{hh}{hhmm[2:]}'
+    
+    if not isinstance(st, str) or not isinstance(en, str):
+        raise Exception('Invalid type for time')
+    
+    st = st.replace(':','')
+    en = en.replace(':', '')
+    
+    if any([len(st)!=4, len(en)!=4]):
+        raise Exception('Invalid time specified')   
+
+    if int(en) < int(st):
+        en = f"{int(en[:2]) + 24}{en[2:]}"
+    
+    t_gen = st
+    while int(t_gen) <= int(en):
+        
+        yield normalize_24hrs(t_gen)
+        
+        hh = int(t_gen[:2])
+        mm = int(t_gen[2:]) + 1
+        
+        if mm > 59:
+            mm = 0
+            hh = int(hh) + 1
+        t_gen = f"{prefix_zero(str(hh))}{prefix_zero(str(mm))}"
+
+
 def get_images(imgdate: str, time_st: str, time_en: str) -> list:
     """
     Gets list of images based on the date filter specified
@@ -317,34 +370,24 @@ def get_images(imgdate: str, time_st: str, time_en: str) -> list:
         log.info(f'[imgdate: {imgdate} ({time_st} - {time_en})] No images found')
         return []
     
-    t_st = int(remove_leading(time_st.replace(':',''),'0'))
-    t_en = int(remove_leading(time_en.replace(':', ''), '0'))
-    
     images = []
-    try:
-        # get images from the date dir
-        for img in os.listdir(os.path.join(IMG_PATH, datedir)):
-            if img.endswith('.jpg'):
-                log.debug(f'Image: {img}')
-                # get hh:min from image time
-                img_time = int(remove_leading(img.split('_')[1][:4], '0'))
-                if img_time >= t_st and img_time <= t_en:
-                    images.append(img)
-    except Exception as ex:
-        log.error(f'[imgdate: {imgdate} ({time_st} - {time_en})] Error filtering image - {ex.__class__.__name__} - {str(ex)} ')
-        return []
-    
-    if not images:
-        log.info(f'[imgdate: {imgdate} ({time_st} - {time_en})] No images found')
-        return []
-    
-    # sort images based on the sequence number
-    images.sort(key=lambda imgf: imgf.replace('.jpg','').split('_')[-1])
 
-    # IMG_PATH/20230903
-    imgdirpath = os.path.join(IMG_PATH, datedir)
-    images = [os.path.join(imgdirpath, img) for img in images]
+    for hhmm_dir in timerange(st=time_st, en=time_en):
+        # 20230910/1111
+        hhmm_dir = os.path.join(datedir, hhmm_dir)
+        # IMG_PATH/20230910/1111
+        hhmm_dir = os.path.join(IMG_PATH, hhmm_dir)
 
+        if not os.path.exists(hhmm_dir):
+            continue
+        
+        ['IMG_PATH/20230910/1111/20230910_111101_000001.jpg']
+        imgs_in_dir = [os.path.join(hhmm_dir, imgf) 
+                       for imgf in os.listdir(hhmm_dir) if imgf.endswith('.jpg')]
+        # sort images based on the sequence number
+        imgs_in_dir.sort(key=lambda imgf: imgf.replace('jpg', '').split('_')[-1])
+        images.extend(imgs_in_dir)
+        
     return images
 
 
@@ -379,3 +422,52 @@ def get_err404_image():
     return (b'--frame\r\n'
             b'Content-Type: image/jpeg\r\n\r\n'+ imgdata + b'\r\n'
     )
+
+
+# old implementation
+# interates through images in the date directory
+# def get_images(imgdate: str, time_st: str, time_en: str) -> list:
+#     """
+#     Gets list of images based on the date filter specified
+
+#     Params:
+#         imgdate - Image date (yyyy-mm-dd)
+#         time_st - Start time (hh:mm)
+#         time_en - End time (hh:mm)
+#     """
+
+#     datedir = imgdate.replace('-','')
+#     # return 404 img if directory doesn't exist
+#     if not os.path.exists(os.path.join(IMG_PATH, datedir)):
+#         log.info(f'[imgdate: {imgdate} ({time_st} - {time_en})] No images found')
+#         return []
+    
+#     t_st = int(remove_leading(time_st.replace(':',''),'0'))
+#     t_en = int(remove_leading(time_en.replace(':', ''), '0'))
+    
+#     images = []
+#     try:
+#         # get images from the date dir
+#         for img in os.listdir(os.path.join(IMG_PATH, datedir)):
+#             if img.endswith('.jpg'):
+#                 log.debug(f'Image: {img}')
+#                 # get hh:min from image time
+#                 img_time = int(remove_leading(img.split('_')[1][:4], '0'))
+#                 if img_time >= t_st and img_time <= t_en:
+#                     images.append(img)
+#     except Exception as ex:
+#         log.error(f'[imgdate: {imgdate} ({time_st} - {time_en})] Error filtering image - {ex.__class__.__name__} - {str(ex)} ')
+#         return []
+    
+#     if not images:
+#         log.info(f'[imgdate: {imgdate} ({time_st} - {time_en})] No images found')
+#         return []
+    
+#     # sort images based on the sequence number
+#     images.sort(key=lambda imgf: imgf.replace('.jpg','').split('_')[-1])
+
+#     # IMG_PATH/20230903
+#     imgdirpath = os.path.join(IMG_PATH, datedir)
+#     images = [os.path.join(imgdirpath, img) for img in images]
+
+#     return images
