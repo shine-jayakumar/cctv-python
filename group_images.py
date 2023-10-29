@@ -1,3 +1,7 @@
+
+# group_images.py
+# groups images as per the date/time
+
 import time
 from modules.helpers import group_images
 from constants.constants import GROUP_IMAGES_INTERVAL

@@ -18,47 +18,6 @@ from typing import Callable, Iterable, Iterator
 log = AppLogger('HELPERS').getlogger()
 
 
-# def add_timestamp(imgpath: str) -> tuple[str,bool]:
-#     """
-#     Add the timestamp to images
-#     """
-#     # 20230902_152601.jpg -> 20230902_152601
-#     tstamp = imgpath.split('.')[0]
-#     # 20230902_152601 -> 2023-09-02 15:26:01
-#     tstamp = datetime.strptime(tstamp, '%Y%m%d_%H%M%S%f').strftime('%Y-%m-%d %H:%M:%S:%f')
-#     # ffmpeg requires escaping special characters
-#     tstamp = tstamp.replace(':','\:')
-
-#     tmp_imgpath = os.path.join(IMG_PATH, f"{imgpath.split('.jpg')[0]}_tmp.jpg")
-#     imgpath = os.path.join(IMG_PATH, imgpath)
-    
-#     # ffmpeg filter
-#     filter = f"drawtext=text='{tstamp}': x=5: y=5: fontcolor=yellow: fontsize=12: shadowcolor=black: shadowx=1: shadowy=1: box=1: boxcolor=black@0.8: boxborderw=5"
-
-#     # ffmpeg arguments
-#     ffmpeg_cmd = [
-#         "ffmpeg",
-#         "-i", imgpath,
-#         "-vf", filter,
-#         tmp_imgpath,
-#         "-loglevel", "error"
-#     ]
-#     try:
-#         # add timestampt to image
-#         subprocess.run(ffmpeg_cmd, check=True)
-#         # remove original image file
-#         os.remove(imgpath)
-#         # rename new image filename (with timestamp) 
-#         # to original filename
-#         os.rename(tmp_imgpath, imgpath)
-
-#     except Exception as ex:
-#         log.error(f'Error adding timestamp: {ex.__class__.__name__} - {str(ex)}')
-#         return (imgpath, False)
-    
-#     return (imgpath, True)
-
-
 def add_timestamp(imgpath: str) -> tuple[str,bool]:
     """
     Adds timestamp to an image
@@ -507,3 +466,45 @@ def get_err404_image():
 #     images = [os.path.join(imgdirpath, img) for img in images]
 
 #     return images
+
+
+
+# def add_timestamp(imgpath: str) -> tuple[str,bool]:
+#     """
+#     Add the timestamp to images
+#     """
+#     # 20230902_152601.jpg -> 20230902_152601
+#     tstamp = imgpath.split('.')[0]
+#     # 20230902_152601 -> 2023-09-02 15:26:01
+#     tstamp = datetime.strptime(tstamp, '%Y%m%d_%H%M%S%f').strftime('%Y-%m-%d %H:%M:%S:%f')
+#     # ffmpeg requires escaping special characters
+#     tstamp = tstamp.replace(':','\:')
+
+#     tmp_imgpath = os.path.join(IMG_PATH, f"{imgpath.split('.jpg')[0]}_tmp.jpg")
+#     imgpath = os.path.join(IMG_PATH, imgpath)
+    
+#     # ffmpeg filter
+#     filter = f"drawtext=text='{tstamp}': x=5: y=5: fontcolor=yellow: fontsize=12: shadowcolor=black: shadowx=1: shadowy=1: box=1: boxcolor=black@0.8: boxborderw=5"
+
+#     # ffmpeg arguments
+#     ffmpeg_cmd = [
+#         "ffmpeg",
+#         "-i", imgpath,
+#         "-vf", filter,
+#         tmp_imgpath,
+#         "-loglevel", "error"
+#     ]
+#     try:
+#         # add timestampt to image
+#         subprocess.run(ffmpeg_cmd, check=True)
+#         # remove original image file
+#         os.remove(imgpath)
+#         # rename new image filename (with timestamp) 
+#         # to original filename
+#         os.rename(tmp_imgpath, imgpath)
+
+#     except Exception as ex:
+#         log.error(f'Error adding timestamp: {ex.__class__.__name__} - {str(ex)}')
+#         return (imgpath, False)
+    
+#     return (imgpath, True)

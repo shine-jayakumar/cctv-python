@@ -1,9 +1,13 @@
+
+# applogger.py
+# class for logging
+
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from datetime import datetime
 import os
 import sys
-# from constants.constants import LOG_PATH
+
 
 LOG_PATH = 'logs'
 

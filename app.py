@@ -1,9 +1,13 @@
 
+# app.py
+# main script called by gunicorn
+# registers endpoints
+
+
 from flask import Flask, render_template, Response, request, send_file
 from constants.constants import ERROR404_IMG_PATH, STREAM_INTERVAL
 from modules.helpers import get_images, stream_images
 from modules.applogger import AppLogger
-
 
 
 app = Flask(__name__)
